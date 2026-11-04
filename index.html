@@ -4,29 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>양곡 수행평가 알리미</title>
-    <!-- PWA Settings -->
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#E6E7ED">
     
-    <!-- Tailwind CSS & FontAwesome -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap');
-        
         body {
             background-color: #E6E7ED;
             color: #333333;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             -webkit-tap-highlight-color: transparent;
         }
-
-        .font-num {
-            font-family: 'Space Grotesk', sans-serif;
-        }
-
-        /* Neumorphism (Soft UI) Styles */
         .neu-flat {
             background: #E6E7ED;
             box-shadow: 6px 6px 12px #c1c1c1, -6px -6px 12px #ffffff;
@@ -42,240 +32,97 @@
         }
         .neu-btn:active {
             box-shadow: inset 3px 3px 6px #c1c1c1, inset -3px -3px 6px #ffffff;
-            transform: scale(0.98);
         }
     </style>
 </head>
-<body class="min-h-screen pb-12 flex justify-center px-4 pt-4">
-    <div class="w-full max-w-md">
+<body class="min-h-screen pb-12 flex justify-center">
+    <div class="w-full max-w-md px-5 py-6">
         
-        <!-- 헤더 영역 -->
-        <header class="flex justify-between items-center mb-6">
+        <header class="flex justify-between items-center mb-8">
             <div>
                 <h1 class="text-xl font-bold text-gray-800 tracking-tight">양곡 수행평가 알리미</h1>
-                <p class="text-xs text-gray-500 mt-0.5">구글 클래스룸 과제 자동 연동</p>
+                <p class="text-xs text-gray-500 mt-1">구글 클래스룸 과제 자동 연동</p>
             </div>
-            <div class="flex gap-2.5">
+            <div class="flex gap-3">
                 <button onclick="fetchClassroomTasks()" class="w-10 h-10 rounded-full neu-btn flex items-center justify-center text-gray-600 hover:text-emerald-600">
                     <i class="fa-solid fa-rotate-right" id="syncIcon"></i>
                 </button>
-                <button onclick="openSolutionModal()" class="w-10 h-10 rounded-full neu-btn flex items-center justify-center text-amber-600">
-                    <i class="fa-solid fa-wrench"></i>
+                <button onclick="openHelpModal()" class="w-10 h-10 rounded-full neu-btn flex items-center justify-center text-gray-600">
+                    <i class="fa-solid fa-circle-question"></i>
                 </button>
             </div>
         </header>
 
-        <!-- GAS 연결 안내 알림 바 -->
-        <div class="p-4 mb-6 rounded-2xl neu-flat border-l-4 border-amber-500 space-y-2">
-            <div class="flex justify-between items-center">
-                <span class="text-xs font-bold text-amber-800 flex items-center gap-1.5">
-                    <i class="fa-solid fa-triangle-exclamation text-amber-600"></i> 구글 스크립트 권한 해결 방법
-                </span>
-                <button onclick="openSolutionModal()" class="text-[10px] font-bold text-blue-600 underline">수정 코드 보기</button>
-            </div>
-            <p class="text-[11px] text-gray-600 leading-relaxed">
-                학교 계정(<code class="bg-gray-200 px-1 rounded">yanggok.hs.kr</code>) URL은 브라우저 보안(CORS)으로 인해 데이터를 불러오지 못합니다. 구글 앱 스크립트에서 <b>JSONP 방식</b>을 활성화해주시면 해결됩니다!
-            </p>
-        </div>
-
-        <!-- 수행평가 필터 탭 -->
-        <div class="flex neu-pressed p-1 rounded-2xl mb-5 text-xs">
-            <button onclick="filterTasks('all')" id="tab-all" class="flex-1 py-2 font-bold neu-btn rounded-xl text-gray-800">전체</button>
-            <button onclick="filterTasks('pending')" id="tab-pending" class="flex-1 py-2 font-medium text-gray-500 rounded-xl">진행 중</button>
-            <button onclick="filterTasks('completed')" id="tab-completed" class="flex-1 py-2 font-medium text-gray-500 rounded-xl">완료</button>
-        </div>
-
-        <!-- 제출 예정 과제 목록 -->
-        <section class="mb-8 space-y-3">
-            <h2 class="text-xs font-bold text-gray-500 px-1 flex justify-between items-center">
-                <span><i class="fa-solid fa-clock text-emerald-500 mr-1"></i> 수행평가 목록</span>
-                <span id="taskCount" class="font-num text-emerald-600 font-bold">2개</span>
+        <section class="mb-8">
+            <h2 class="text-sm font-semibold text-gray-500 mb-4 px-1 flex items-center gap-2">
+                <i class="fa-solid fa-clock text-emerald-500"></i> 제출 예정 과제
             </h2>
-            <div id="taskList" class="space-y-3">
-                <!-- 과제 카드가 동적으로 들어옵니다 -->
+            <div id="activeTaskList" class="space-y-4">
+                <div class="p-6 rounded-2xl neu-pressed text-center text-gray-400 text-sm">
+                    과제를 불러오는 중입니다...
+                </div>
             </div>
+        </section>
+
+        <section>
+            <h2 class="text-sm font-semibold text-gray-400 mb-4 px-1 flex items-center gap-2">
+                <i class="fa-solid fa-check-double"></i> 완료 / 지난 과제
+            </h2>
+            <div id="expiredTaskList" class="space-y-3 opacity-70"></div>
         </section>
 
     </div>
 
-    <!-- GAS CORS/JSONP 해결 안내 모달 -->
-    <div id="solutionModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-        <div class="bg-[#E6E7ED] p-6 rounded-3xl w-full max-w-sm neu-flat space-y-4 max-h-[85vh] overflow-y-auto">
-            <div class="flex justify-between items-center border-b border-gray-300 pb-3">
-                <h3 class="text-base font-bold text-gray-800 flex items-center gap-2">
-                    <i class="fa-solid fa-code text-emerald-600"></i> GAS 코드 수정하기
-                </h3>
-                <button onclick="closeSolutionModal()" class="text-gray-400 hover:text-gray-600">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
-            </div>
-
-            <div class="text-xs text-gray-600 space-y-3 leading-relaxed">
-                <p>구글 앱 스크립트(`Code.gs`) 편집기로 돌아가셔서 **`doGet(e)`** 함수를 아래와 같이 변경해 주세요!</p>
-
-                <!-- 복사 가능한 GAS 코드 블록 -->
-                <div class="p-3 bg-gray-900 text-gray-100 rounded-xl font-mono text-[10px] space-y-1 overflow-x-auto relative">
-                    <button onclick="copyGasCode()" class="absolute top-2 right-2 text-[9px] bg-emerald-600 text-white px-2 py-0.5 rounded">복사</button>
-<pre id="gasCodeText">
-function doGet(e) {
-  var callback = e.parameter.callback;
-  var data = {
-    success: true,
-    tasks: getMyClassroomTasks() // 과제 함수
-  };
-  
-  var output = callback + '(' + JSON.stringify(data) + ')';
-  return ContentService.createTextOutput(output)
-    .setMimeType(ContentService.MimeType.JAVASCRIPT);
-}
-</pre>
-                </div>
-
-                <div class="neu-pressed p-3 rounded-2xl space-y-1.5 text-[11px]">
-                    <strong class="text-gray-800 block">⚙️ 배포 설정 시 필수 3가지</strong>
-                    <ol class="list-decimal list-inside space-y-1 text-gray-600">
-                        <li><b>[배포] -> [새 배포]</b> 클릭</li>
-                        <li><b>다음 사용자 지정으로 실행:</b> 나(Me)</li>
-                        <li><b>액세스할 수 있는 사용자:</b> <span class="text-rose-600 font-bold">모든 사용자 (Anyone)</span></li>
-                    </ol>
-                </div>
-            </div>
-
-            <button onclick="closeSolutionModal()" class="w-full py-3 rounded-xl neu-btn text-xs font-bold text-gray-800">
-                확인했습니다
-            </button>
+    <div id="helpModal" class="fixed inset-0 bg-black/30 backdrop-blur-sm hidden items-center justify-center p-5 z-50">
+        <div class="bg-[#E6E7ED] p-6 rounded-3xl w-full max-w-sm neu-flat relative">
+            <h3 class="text-lg font-bold text-gray-800 mb-3">사용 안내</h3>
+            <ul class="text-xs text-gray-600 space-y-2 mb-6 leading-relaxed">
+                <li>• 동기화 버튼을 누르면 구글 클래스룸의 최신 과제를 가져옵니다.</li>
+                <li>• 브라우저 메뉴에서 '홈 화면에 추가'를 누르면 모바일 앱으로 설치 가능합니다.</li>
+            </ul>
+            <button onclick="closeHelpModal()" class="w-full py-3 rounded-xl neu-btn text-sm font-bold text-gray-700">닫기</button>
         </div>
     </div>
 
     <script>
-        // 학교 GAS URL
         const GAS_WEB_APP_URL = 'https://script.google.com/a/macros/yanggok.hs.kr/s/AKfycbypB6n_6hpfXDQa7PBIy813JOGx3ksKn-oddOFgkxfujCf6SzJt0gpNli7AX5PsbZEajw/exec';
 
-        // 기본 과제 데이터
-        let tasks = [
-            { id: '1', subject: '수학', title: '미적분 탐구 보고서 제출', dueDate: '2026-11-10T23:59', memo: '클래스룸에 PDF 업로드', completed: false },
-            { id: '2', subject: '영어', title: '영어 에세이 발표 준비', dueDate: '2026-11-15T18:00', memo: '대본 작성 후 발표 연습', completed: false }
-        ];
-
-        let currentFilter = 'all';
-
-        document.addEventListener('DOMContentLoaded', () => {
-            renderTasks();
-            registerServiceWorker();
-        });
-
-        // JSONP 방식으로 GAS 데이터 요청 (CORS 우회)
         function fetchClassroomTasks() {
             const syncIcon = document.getElementById('syncIcon');
             if (syncIcon) syncIcon.classList.add('fa-spin');
 
+            // JSONP 방식으로 요청
             const script = document.createElement('script');
-            const callbackName = 'gasCallback_' + Date.now();
+            const callbackName = 'handleGASResponse_' + Math.floor(Math.random() * 1000000);
+            
+            let isResponded = false;
 
             window[callbackName] = function(data) {
+                isResponded = true;
                 if (syncIcon) syncIcon.classList.remove('fa-spin');
-                if (data && data.tasks) {
-                    tasks = data.tasks;
-                    renderTasks();
-                    alert('구글 클래스룸 최신 과제 동기화 성공! 🎉');
-                } else {
-                    alert('과제를 불러왔으나 목록이 비어있습니다.');
-                }
-                document.body.removeChild(script);
                 delete window[callbackName];
+                document.body.removeChild(script);
+
+                if (data && data.success && data.tasks) {
+                    renderTasks(data.tasks);
+                } else {
+                    renderTasks([]);
+                }
             };
+
+            // 타임아웃 (3초 내 응답 없으면 학교 계정 로그인 필요 안내)
+            setTimeout(() => {
+                if (!isResponded) {
+                    if (syncIcon) syncIcon.classList.remove('fa-spin');
+                    showAuthGuide();
+                }
+            }, 3500);
 
             script.src = `${GAS_WEB_APP_URL}?callback=${callbackName}`;
             script.onerror = function() {
                 if (syncIcon) syncIcon.classList.remove('fa-spin');
-                openSolutionModal();
+                showAuthGuide();
             };
 
             document.body.appendChild(script);
         }
-
-        function calculateDDay(dueDateStr) {
-            const due = new Date(dueDateStr);
-            const now = new Date();
-            const diffTime = due - now;
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-            if (diffDays < 0) return { text: '마감', bg: 'text-gray-400' };
-            if (diffDays === 0) return { text: 'D-Day', bg: 'text-rose-500 font-bold' };
-            return { text: `D-${diffDays}`, bg: 'text-rose-500 font-bold' };
-        }
-
-        function renderTasks() {
-            const container = document.getElementById('taskList');
-            container.innerHTML = '';
-
-            let filtered = tasks.filter(t => {
-                if (currentFilter === 'pending') return !t.completed;
-                if (currentFilter === 'completed') return t.completed;
-                return true;
-            });
-
-            document.getElementById('taskCount').innerText = `${filtered.length}개`;
-
-            filtered.forEach(task => {
-                const dday = calculateDDay(task.dueDate);
-                const card = document.createElement('div');
-                card.className = `p-5 rounded-2xl neu-flat mb-3 flex flex-col justify-between ${task.completed ? 'opacity-60' : ''}`;
-                card.innerHTML = `
-                    <div class="flex justify-between items-start mb-2">
-                        <span class="text-xs font-bold px-2.5 py-1 rounded-full neu-pressed text-emerald-600">${task.subject}</span>
-                        <span class="text-xs font-extrabold ${dday.bg}">${dday.text}</span>
-                    </div>
-                    <h3 class="font-bold text-gray-800 text-base mb-1 ${task.completed ? 'line-through text-gray-400' : ''}">${task.title}</h3>
-                    <p class="text-xs text-gray-500 mb-2">${task.memo || ''}</p>
-                    <div class="pt-2 border-t border-gray-300/40 text-[10px] text-gray-400 flex justify-between items-center">
-                        <span>마감일: ${task.dueDate.replace('T', ' ')}</span>
-                        <button onclick="toggleTask('${task.id}')" class="px-2 py-1 neu-btn rounded-lg text-gray-600 font-bold">
-                            ${task.completed ? '취소' : '완료'}
-                        </button>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        function toggleTask(id) {
-            tasks = tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t);
-            renderTasks();
-        }
-
-        function filterTasks(type) {
-            currentFilter = type;
-            ['all', 'pending', 'completed'].forEach(t => {
-                const btn = document.getElementById(`tab-${t}`);
-                if (t === type) {
-                    btn.className = "flex-1 py-2 font-bold neu-btn rounded-xl text-gray-800";
-                } else {
-                    btn.className = "flex-1 py-2 font-medium text-gray-500 rounded-xl";
-                }
-            });
-            renderTasks();
-        }
-
-        function openSolutionModal() { document.getElementById('solutionModal').classList.remove('hidden'); document.getElementById('solutionModal').classList.add('flex'); }
-        function closeSolutionModal() { document.getElementById('solutionModal').classList.add('hidden'); document.getElementById('solutionModal').classList.remove('flex'); }
-
-        function copyGasCode() {
-            const text = document.getElementById('gasCodeText').innerText;
-            const input = document.createElement('textarea');
-            input.value = text;
-            document.body.appendChild(input);
-            input.select();
-            document.execCommand('copy');
-            document.body.removeChild(input);
-            alert('GAS 코드가 복사되었습니다! 구글 앱 스크립트 Code.gs 파일에 붙여넣어 주세요.');
-        }
-
-        function registerServiceWorker() {
-            if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
-                navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW Registration skipped:', err));
-            }
-        }
-    </script>
-</body>
-</html>
