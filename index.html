@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>양곡 수행평가 알리미</title>
+    <!-- PWA Manifest 연결 -->
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#E6E7ED">
+    
+    <!-- Tailwind CSS & FontAwesome Icons -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            background-color: #E6E7ED;
+            color: #333333;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Soft UI (Neumorphism) 스타일 정의 */
+        .neu-flat {
+            background: #E6E7ED;
+            box-shadow: 6px 6px 12px #c1c1c1, -6px -6px 12px #ffffff;
+        }
+        .neu-pressed {
+            background: #E6E7ED;
+            box-shadow: inset 4px 4px 8px #c1c1c1, inset -4px -4px 8px #ffffff;
+        }
+        .neu-btn {
+            background: #E6E7ED;
+            box-shadow: 5px 5px 10px #c1c1c1, -5px -5px 10px #ffffff;
+            transition: all 0.2s ease;
+        }
+        .neu-btn:active {
+            box-shadow: inset 3px 3px 6px #c1c1c1, inset -3px -3px 6px #ffffff;
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-12 flex justify-center">
+    <div class="w-full max-w-md px-5 py-6">
+        
+        <!-- 헤더 영역 -->
+        <header class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-xl font-bold text-gray-800 tracking-tight">양곡 수행평가 알리미</h1>
+                <p class="text-xs text-gray-500 mt-1">구글 클래스룸 과제 자동 연동</p>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="fetchClassroomTasks()" class="w-10 h-10 rounded-full neu-btn flex items-center justify-center text-gray-600 hover:text-emerald-600">
+                    <i class="fa-solid fa-rotate-right" id="syncIcon"></i>
+                </button>
+                <button onclick="openHelpModal()" class="w-10 h-10 rounded-full neu-btn flex items-center justify-center text-gray-600">
+                    <i class="fa-solid fa-circle-question"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- 진행 중인 과제 섹션 -->
+        <section class="mb-8">
+            <h2 class="text-sm font-semibold text-gray-500 mb-4 px-1 flex items-center gap-2">
+                <i class="fa-solid fa-clock text-emerald-500"></i> 제출 예정 과제
+            </h2>
+            <div id="activeTaskList" class="space-y-4">
+                <div class="p-6 rounded-2xl neu-pressed text-center text-gray-400 text-sm">
+                    과제를 불러오는 중이거나 등록된 과제가 없습니다.
+                </div>
+            </div>
+        </section>
+
+        <!-- 완료/마감된 과제 섹션 -->
+        <section>
+            <h2 class="text-sm font-semibold text-gray-400 mb-4 px-1 flex items-center gap-2">
+                <i class="fa-solid fa-check-double"></i> 완료 / 지난 과제
+            </h2>
+            <div id="expiredTaskList" class="space-y-3 opacity-70">
+                <!-- 완료된 과제 카드가 여기에 들어갑니다 -->
+            </div>
+        </section>
+
+    </div>
+
+    <!-- 매뉴얼 / 도움말 모달 -->
+    <div id="helpModal" class="fixed inset-0 bg-black/30 backdrop-blur-sm hidden items-center justify-center p-5 z-50">
+        <div class="bg-[#E6E7ED] p-6 rounded-3xl w-full max-w-sm neu-flat relative">
+            <h3 class="text-lg font-bold text-gray-800 mb-3">사용 안내</h3>
+            <ul class="text-xs text-gray-600 space-y-2
