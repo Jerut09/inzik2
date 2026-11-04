@@ -4,9 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>양곡 수행평가 알리미</title>
+    <!-- PWA Manifest 연결 -->
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#E6E7ED">
     
+    <!-- Tailwind CSS & FontAwesome Icons -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -17,6 +19,8 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             -webkit-tap-highlight-color: transparent;
         }
+
+        /* Neumorphism (Soft UI) 스타일 정의 */
         .neu-flat {
             background: #E6E7ED;
             box-shadow: 6px 6px 12px #c1c1c1, -6px -6px 12px #ffffff;
@@ -38,21 +42,23 @@
 <body class="min-h-screen pb-12 flex justify-center">
     <div class="w-full max-w-md px-5 py-6">
         
+        <!-- 상단 헤더 -->
         <header class="flex justify-between items-center mb-8">
             <div>
                 <h1 class="text-xl font-bold text-gray-800 tracking-tight">양곡 수행평가 알리미</h1>
                 <p class="text-xs text-gray-500 mt-1">구글 클래스룸 과제 자동 연동</p>
             </div>
             <div class="flex gap-3">
-                <button onclick="fetchClassroomTasks()" class="w-10 h-10 rounded-full neu-btn flex items-center justify-center text-gray-600 hover:text-emerald-600">
+                <button onclick="fetchClassroomTasks()" class="w-10 h-10 rounded-full neu-btn flex items-center justify-center text-gray-600 hover:text-emerald-600" title="동기화">
                     <i class="fa-solid fa-rotate-right" id="syncIcon"></i>
                 </button>
-                <button onclick="openHelpModal()" class="w-10 h-10 rounded-full neu-btn flex items-center justify-center text-gray-600">
+                <button onclick="openHelpModal()" class="w-10 h-10 rounded-full neu-btn flex items-center justify-center text-gray-600" title="도움말">
                     <i class="fa-solid fa-circle-question"></i>
                 </button>
             </div>
         </header>
 
+        <!-- 진행 중인 과제 목록 -->
         <section class="mb-8">
             <h2 class="text-sm font-semibold text-gray-500 mb-4 px-1 flex items-center gap-2">
                 <i class="fa-solid fa-clock text-emerald-500"></i> 제출 예정 과제
@@ -64,65 +70,123 @@
             </div>
         </section>
 
+        <!-- 완료 및 마감된 과제 목록 -->
         <section>
             <h2 class="text-sm font-semibold text-gray-400 mb-4 px-1 flex items-center gap-2">
                 <i class="fa-solid fa-check-double"></i> 완료 / 지난 과제
             </h2>
-            <div id="expiredTaskList" class="space-y-3 opacity-70"></div>
+            <div id="expiredTaskList" class="space-y-3 opacity-70">
+            </div>
         </section>
 
     </div>
 
+    <!-- 도움말 모달 창 -->
     <div id="helpModal" class="fixed inset-0 bg-black/30 backdrop-blur-sm hidden items-center justify-center p-5 z-50">
         <div class="bg-[#E6E7ED] p-6 rounded-3xl w-full max-w-sm neu-flat relative">
             <h3 class="text-lg font-bold text-gray-800 mb-3">사용 안내</h3>
             <ul class="text-xs text-gray-600 space-y-2 mb-6 leading-relaxed">
-                <li>• 동기화 버튼을 누르면 구글 클래스룸의 최신 과제를 가져옵니다.</li>
-                <li>• 브라우저 메뉴에서 '홈 화면에 추가'를 누르면 모바일 앱으로 설치 가능합니다.</li>
+                <li>• 상단 <b>새로고침 버튼</b>을 누르면 구글 클래스룸 최신 과제를 즉시 동기화합니다.</li>
+                <li>• 모바일 브라우저 메뉴에서 <b>'홈 화면에 추가'</b>를 누르면 모바일 전용 앱으로 바로 사용할 수 있습니다.</li>
             </ul>
             <button onclick="closeHelpModal()" class="w-full py-3 rounded-xl neu-btn text-sm font-bold text-gray-700">닫기</button>
         </div>
     </div>
 
     <script>
-        const GAS_WEB_APP_URL = 'https://script.google.com/a/macros/yanggok.hs.kr/s/AKfycbypB6n_6hpfXDQa7PBIy813JOGx3ksKn-oddOFgkxfujCf6SzJt0gpNli7AX5PsbZEajw/exec';
+        // 📌 변경된 구글 앱 스크립트 다이렉트 응답 URL
+        const GAS_WEB_APP_URL = 'https://script.googleusercontent.com/a/macros/yanggok.hs.kr/echo?user_content_key=AUkAhnQ3bW8P66BmXadKU5hpH8WTH2HY4eoOFqvD-46SHQ7WpS-dvTa7XRl_c7TnmYfLb82iqiDRxlX9W99AuBGassLmUPn9CBp7Me8qvVsZBmnkXy1UoZi_HpD2NHS0k2zPGPLUhafcpsg2M78jnIxfgI5nBTkaEvbjeebSIbDe8ufKrgf_aAsDhpEDd5ogydD6snqUffq_Xeu75NscOrq2Ym5tMtpGQcruRNcgDr6VhpN2FK08sXKurSJUpQrFQvRh1DxhcLgOOg_A30nXS4ICVv13AYsJKICRFq9e-bb--ZRQBQnvsng&lib=MlEzz8dUwml3p-7jX3WtRyX_7z-OOs-uU';
 
+        // 구글 클래스룸 과제 수신 함수
         function fetchClassroomTasks() {
             const syncIcon = document.getElementById('syncIcon');
             if (syncIcon) syncIcon.classList.add('fa-spin');
 
-            // JSONP 방식으로 요청
-            const script = document.createElement('script');
-            const callbackName = 'handleGASResponse_' + Math.floor(Math.random() * 1000000);
-            
-            let isResponded = false;
-
-            window[callbackName] = function(data) {
-                isResponded = true;
-                if (syncIcon) syncIcon.classList.remove('fa-spin');
-                delete window[callbackName];
-                document.body.removeChild(script);
-
-                if (data && data.success && data.tasks) {
-                    renderTasks(data.tasks);
-                } else {
-                    renderTasks([]);
-                }
-            };
-
-            // 타임아웃 (3초 내 응답 없으면 학교 계정 로그인 필요 안내)
-            setTimeout(() => {
-                if (!isResponded) {
+            fetch(GAS_WEB_APP_URL)
+                .then(response => {
+                    if (!response.ok) throw new Error('네트워크 응답 오류');
+                    return response.json();
+                })
+                .then(data => {
                     if (syncIcon) syncIcon.classList.remove('fa-spin');
-                    showAuthGuide();
-                }
-            }, 3500);
-
-            script.src = `${GAS_WEB_APP_URL}?callback=${callbackName}`;
-            script.onerror = function() {
-                if (syncIcon) syncIcon.classList.remove('fa-spin');
-                showAuthGuide();
-            };
-
-            document.body.appendChild(script);
+                    if (data && data.success && data.tasks) {
+                        renderTasks(data.tasks);
+                    } else if (Array.isArray(data)) {
+                        renderTasks(data);
+                    } else {
+                        renderTasks([]);
+                    }
+                })
+                .catch(error => {
+                    if (syncIcon) syncIcon.classList.remove('fa-spin');
+                    console.error('Fetch Error:', error);
+                    renderTasks([]);
+                });
         }
+
+        // 과제 카드 HTML 생성 및 화면 출력
+        function renderTasks(tasks) {
+            const activeContainer = document.getElementById('activeTaskList');
+            const expiredContainer = document.getElementById('expiredTaskList');
+            
+            activeContainer.innerHTML = '';
+            expiredContainer.innerHTML = '';
+
+            if (!tasks || tasks.length === 0) {
+                activeContainer.innerHTML = `<div class="p-6 rounded-2xl neu-pressed text-center text-gray-400 text-sm">제출할 과제가 없거나 등록된 정보가 없습니다! 🎉</div>`;
+                return;
+            }
+
+            const now = new Date();
+
+            tasks.forEach(task => {
+                const due = new Date(task.dueDate || now);
+                const isExpired = due < now;
+
+                const diffTime = due - now;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                let dDayText = diffDays === 0 ? 'D-Day' : (diffDays > 0 ? `D-${diffDays}` : `마감`);
+
+                const cardHTML = `
+                    <div class="p-5 rounded-2xl neu-flat mb-3 flex flex-col justify-between">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-xs font-bold px-2.5 py-1 rounded-full neu-pressed text-emerald-600">${task.subject || '공통'}</span>
+                            <span class="text-xs font-extrabold ${isExpired ? 'text-gray-400' : 'text-rose-500'}">${dDayText}</span>
+                        </div>
+                        <h3 class="font-bold text-gray-800 text-base mb-1">${task.title || '제목 없음'}</h3>
+                        <p class="text-xs text-gray-500">${task.memo || ''}</p>
+                        <div class="mt-3 pt-2 border-t border-gray-300/40 text-[10px] text-gray-400 flex justify-between">
+                            <span>마감일: ${(task.dueDate || '').replace('T', ' ')}</span>
+                        </div>
+                    </div>
+                `;
+
+                if (isExpired) {
+                    expiredContainer.innerHTML += cardHTML;
+                } else {
+                    activeContainer.innerHTML += cardHTML;
+                }
+            });
+        }
+
+        // 모달 제어 함수
+        function openHelpModal() { 
+            document.getElementById('helpModal').classList.remove('hidden'); 
+            document.getElementById('helpModal').classList.add('flex'); 
+        }
+        function closeHelpModal() { 
+            document.getElementById('helpModal').classList.add('hidden'); 
+            document.getElementById('helpModal').classList.remove('flex'); 
+        }
+
+        // 서비스 워커 등록
+        if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW registration skipped:', err));
+            });
+        }
+
+        window.onload = fetchClassroomTasks;
+    </script>
+</body>
+</html>
